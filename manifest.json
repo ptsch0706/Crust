@@ -1,0 +1,22 @@
+{
+  "name": "Crust",
+  "short_name": "Crust",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdf8f1",
+  "theme_color": "#5f7a45",
+  "icons": [
+    {
+      "src": "icon2.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

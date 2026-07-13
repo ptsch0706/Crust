@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#5f7a45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crust">
+<link rel="apple-touch-icon" href="icon2.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon2.png">
+<link rel="icon" type="image/png" href="icon2.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>Crust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Same warm cream base as Crumb, but its own accent identity: tomato-red (Ooni)
+       and basil-green (oven) instead of Crumb's crust-orange, so the two apps read
+       as siblings without one looking like a reskin of the other. */
+    --bg: #fdf8f1;
+    --bg-elev: #ffffff;
+    --bg-warm: #f5ebdc;
+    --ink: #1a1612;
+    --ink-soft: #5a4a3a;
+    --ink-mute: #8a7866;
+    --line: #e8dcc8;
+    --line-soft: #f0e6d3;
+    --tomato: #c1432e;
+    --tomato-deep: #96331f;
+    --tomato-soft: #f0d3cb;
+    --basil: #5f7a45;
+    --basil-deep: #46592f;
+    --basil-soft: #dde3cf;
+    --warn: #b85c2a;
+    --shadow-sm: 0 1px 2px rgba(60, 40, 20, 0.06);
+    --shadow-md: 0 4px 16px rgba(60, 40, 20, 0.08);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+  h1, h2, h3 { font-family: 'Fraunces', serif; margin: 0; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  header {
+    padding: 20px 20px 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    font-variation-settings: "opsz" 144;
+  }
+  header h1 .ear { color: var(--tomato); font-style: italic; }
+  header p {
+    color: var(--ink-mute);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+  }
+
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card h2 {
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .card .sub {
+    color: var(--ink-mute);
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  /* Heat gauge — signature element */
+  .heat-gauge {
+    position: relative;
+    height: 54px;
+    border-radius: 27px;
+    background: var(--bg-warm);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .heat-gauge .fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 0%;
+    transition: width 0.5s cubic-bezier(.2,.8,.2,1), background 0.5s ease;
+    border-radius: 27px;
+  }
+  .heat-gauge.ooni .fill { background: linear-gradient(90deg, var(--tomato-soft), var(--tomato)); }
+  .heat-gauge.oven .fill { background: linear-gradient(90deg, var(--basil-soft), var(--basil)); }
+  .heat-gauge .readout {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+  }
+  .heat-gauge .readout .label { font-size: 13px; color: var(--ink-soft); }
+  .heat-gauge .readout .temp { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--ink); }
+
+  /* Segmented control */
+  .segmented {
+    display: flex;
+    background: var(--bg-warm);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .segmented button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .segmented button.active.ooni { background: var(--tomato); color: #fff; }
+  .segmented button.active.oven { background: var(--basil); color: #fff; }
+
+  /* Style cards grid */
+  .style-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .style-option {
+    background: var(--bg-elev);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .style-option:active { transform: scale(0.99); }
+  .style-option.selected {
+    border-color: var(--basil);
+    background: var(--bg-warm);
+  }
+  .style-option .name { font-family: 'Fraunces', serif; font-weight: 500; font-size: 15px; color: var(--ink); }
+  .style-option .meta { color: var(--ink-mute); font-size: 12px; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+  /* Toppings */
+  .topping-cat { margin-bottom: 12px; }
+  .topping-cat .cat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    padding: 8px 12px;
+    border-radius: 100px;
+    border: 1.5px solid var(--line);
+    background: var(--bg-elev);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink);
+    user-select: none;
+  }
+  .chip.selected {
+    border-color: var(--basil);
+    background: var(--basil-soft);
+  }
+  .chip .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: var(--ink-mute);
+  }
+  .chip.wet .dot { background: var(--tomato); }
+
+  /* select dropdown for dough */
+  select {
+    width: 100%;
+    background: var(--bg-elev);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .generate-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--basil);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    box-shadow: var(--shadow-sm);
+  }
+  .generate-btn:active { transform: scale(0.98); background: var(--basil-deep); }
+
+  /* Plan output */
+  .warning-banner {
+    background: var(--tomato-soft);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .plan-step {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .plan-step:last-child { border-bottom: none; }
+  .plan-step .phase-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    width: 64px;
+    flex-shrink: 0;
+    padding-top: 2px;
+    letter-spacing: 0.05em;
+  }
+  .plan-step .instruction { font-size: 14px; line-height: 1.5; }
+
+  .hidden { display: none; }
+
+  .status-msg { color: var(--ink-mute); font-size: 13px; padding: 10px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cr<span class="ear">u</span>st</h1>
+    <p>Pizza Cook Planner</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- STEP 1: DOUGH -->
+  <div class="card">
+    <h2>1. Dough</h2>
+    <div class="sub">Pulled from Crumb</div>
+    <select id="doughSelect">
+      <option value="">Loading doughs…</option>
+    </select>
+    <div class="status-msg" id="doughStatus"></div>
+  </div>
+
+  <!-- STEP 2: STYLE -->
+  <div class="card">
+    <h2>2. Style</h2>
+    <div class="sub">Sets defaults for weight, sauce and cheese ratios</div>
+    <div class="style-grid" id="styleGrid"></div>
+  </div>
+
+  <!-- STEP 3: METHOD -->
+  <div class="card">
+    <h2>3. Method</h2>
+    <div class="sub">Ooni and oven use different timing logic entirely</div>
+    <div class="segmented" style="margin-bottom:14px;">
+      <button class="ooni active" data-method="ooni">Ooni</button>
+      <button class="oven" data-method="oven">Oven</button>
+    </div>
+
+    <div class="heat-gauge ooni" id="heatGauge">
+      <div class="fill" id="heatFill"></div>
+      <div class="readout">
+        <span class="label" id="heatLabel">Preheat target</span>
+        <span class="temp mono" id="heatTemp">950°F</span>
+      </div>
+    </div>
+
+    <!-- Ooni sub-options -->
+    <div id="ooniOptions">
+      <div class="sub" style="margin-top:10px;">Fuel: Gas</div>
+    </div>
+
+    <!-- Oven sub-options -->
+    <div id="ovenOptions" class="hidden">
+      <div class="sub" style="margin-top:10px;">Surface</div>
+      <div class="segmented">
+        <button class="oven active" data-surface="steel">Steel</button>
+        <button class="oven" data-surface="stone">Stone</button>
+        <button class="oven" data-surface="pan">Pan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: TOPPINGS -->
+  <div class="card">
+    <h2>4. Toppings</h2>
+    <div class="sub">Tap to select — wet toppings are flagged</div>
+    <div id="toppingContainer"></div>
+  </div>
+
+  <button class="generate-btn" id="generateBtn">Generate cook plan</button>
+
+  <!-- OUTPUT -->
+  <div class="card hidden" id="planOutput">
+    <h2>Your plan</h2>
+    <div id="warningsContainer"></div>
+    <div id="stepsContainer"></div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ---- FILL THIS IN with the same Firebase config Crumb uses ----
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  // ----------------------------------------------------------------
+  // ADJUST THESE TWO to match Crumb's actual Firestore structure:
+  const DOUGH_COLLECTION = "recipes";     // <- collection name in Crumb
+  const FIELD_MAP = {                     // <- field names in a dough doc
+    name: "name",
+    style: "style",
+    hydration: "hydrationPercent",
+    ballWeight: "ballWeightG"
+  };
+  // ----------------------------------------------------------------
+
+  let app, db;
+  let doughs = [];
+
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+  } catch (e) {
+    console.error("Firebase init failed", e);
+  }
+
+  async function loadDoughs() {
+    const statusEl = document.getElementById('doughStatus');
+    const selectEl = document.getElementById('doughSelect');
+    if (!db) {
+      statusEl.textContent = "Firebase config not set yet — fill in firebaseConfig in the script.";
+      selectEl.innerHTML = '<option value="">— no connection —</option>';
+      return;
+    }
+    try {
+      const snap = await getDocs(collection(db, DOUGH_COLLECTION));
+      doughs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (doughs.length === 0) {
+        statusEl.textContent = `No docs found in "${DOUGH_COLLECTION}" — check the collection name.`;
+        selectEl.innerHTML = '<option value="">— none found —</option>';
+        return;
+      }
+      selectEl.innerHTML = doughs.map(d =>
+        `<option value="${d.id}">${d[FIELD_MAP.name] || d.id}</option>`
+      ).join('');
+      statusEl.textContent = `Loaded ${doughs.length} recipe(s) from Crumb.`;
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = "Couldn't reach Firestore — check config, collection name, and security rules.";
+      selectEl.innerHTML = '<option value="">— error —</option>';
+    }
+  }
+  loadDoughs();
+</script>
+
+<script>
+  // ---------------- STYLE PRESETS ----------------
+  const STYLES = [
+    { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90 },
+    { id: "ny",          name: "New York",   doughWeightG: 340, diameterIn: 14, defaultMethod: "oven", sauceG: 90, cheeseG: 150 },
+    { id: "detroit",     name: "Detroit",    doughWeightG: 400, diameterIn: 0,  defaultMethod: "oven", sauceG: 70, cheeseG: 220 },
+    { id: "grandma",     name: "Grandma",    doughWeightG: 380, diameterIn: 0,  defaultMethod: "oven", sauceG: 100, cheeseG: 140 }
+  ];
+  let selectedStyle = STYLES[0].id;
+
+  const styleGrid = document.getElementById('styleGrid');
+  function renderStyles() {
+    styleGrid.innerHTML = STYLES.map(s => `
+      <div class="style-option ${s.id === selectedStyle ? 'selected' : ''}" data-style="${s.id}">
+        <div class="name">${s.name}</div>
+        <div class="meta">${s.doughWeightG}g${s.diameterIn ? ' · ' + s.diameterIn + '"' : ''}</div>
+      </div>
+    `).join('');
+    styleGrid.querySelectorAll('.style-option').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedStyle = el.dataset.style;
+        renderStyles();
+      });
+    });
+  }
+  renderStyles();
+
+  // ---------------- METHOD STATE ----------------
+  let selectedMethod = "ooni";
+  let selectedFuel = "gas";
+  let selectedSurface = "steel";
+
+  const METHOD_CONFIG = {
+    ooni: { tempF: 950, label: "Preheat target" },
+    oven: { tempF: 550, label: "Preheat target" }
+  };
+
+  function updateHeatGauge() {
+    const gauge = document.getElementById('heatGauge');
+    const fill = document.getElementById('heatFill');
+    const tempEl = document.getElementById('heatTemp');
+    const cfg = METHOD_CONFIG[selectedMethod];
+    gauge.className = 'heat-gauge ' + selectedMethod;
+    tempEl.textContent = cfg.tempF + '°F';
+    requestAnimationFrame(() => {
+      fill.style.width = Math.min(100, (cfg.tempF / 1000) * 100) + '%';
+    });
+  }
+  updateHeatGauge();
+
+  document.querySelectorAll('[data-method]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedMethod = btn.dataset.method;
+      document.querySelectorAll('[data-method]').forEach(b => b.classList.toggle('active', b.dataset.method === selectedMethod));
+      document.getElementById('ooniOptions').classList.toggle('hidden', selectedMethod !== 'ooni');
+      document.getElementById('ovenOptions').classList.toggle('hidden', selectedMethod !== 'oven');
+      updateHeatGauge();
+    });
+  });
+  document.querySelectorAll('[data-fuel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedFuel = btn.dataset.fuel;
+      document.querySelectorAll('[data-fuel]').forEach(b => b.classList.toggle('active', b.dataset.fuel === selectedFuel));
+    });
+  });
+  document.querySelectorAll('[data-surface]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSurface = btn.dataset.surface;
+      document.querySelectorAll('[data-surface]').forEach(b => b.classList.toggle('active', b.dataset.surface === selectedSurface));
+    });
+  });
+
+  // ---------------- TOPPINGS ----------------
+  const TOPPINGS = [
+    { id: "san-marzano", name: "San Marzano sauce", category: "sauce", moisture: "wet", addTiming: "before-bake" },
+    { id: "fresh-mozz",  name: "Fresh mozzarella",  category: "cheese", moisture: "wet", addTiming: "before-bake" },
+    { id: "low-moist-mozz", name: "Low-moisture mozz", category: "cheese", moisture: "dry", addTiming: "before-bake" },
+    { id: "pepperoni",   name: "Pepperoni", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "sausage",     name: "Italian sausage", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "mushroom",    name: "Mushroom", category: "veg", moisture: "wet", addTiming: "before-bake" },
+    { id: "onion",       name: "Red onion", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "basil",       name: "Fresh basil", category: "finishing", moisture: "wet", addTiming: "after-bake" },
+    { id: "arugula",     name: "Arugula", category: "finishing", moisture: "wet", addTiming: "after-bake" },
+    { id: "chili-oil",   name: "Chili oil", category: "finishing", moisture: "dry", addTiming: "after-bake" }
+  ];
+  const CATEGORY_LABELS = { sauce: "Sauce", cheese: "Cheese", protein: "Protein", veg: "Vegetables", finishing: "Finishing" };
+  let selectedToppings = new Set(["san-marzano", "fresh-mozz", "basil"]);
+
+  function renderToppings() {
+    const container = document.getElementById('toppingContainer');
+    const cats = ["sauce", "cheese", "protein", "veg", "finishing"];
+    container.innerHTML = cats.map(cat => `
+      <div class="topping-cat">
+        <div class="cat-label">${CATEGORY_LABELS[cat]}</div>
+        <div class="chip-row">
+          ${TOPPINGS.filter(t => t.category === cat).map(t => `
+            <div class="chip ${t.moisture} ${selectedToppings.has(t.id) ? 'selected' : ''}" data-topping="${t.id}">
+              <span class="dot"></span>${t.name}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+    container.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const id = chip.dataset.topping;
+        if (selectedToppings.has(id)) selectedToppings.delete(id);
+        else selectedToppings.add(id);
+        renderToppings();
+      });
+    });
+  }
+  renderToppings();
+
+  // ---------------- PLAN GENERATION ----------------
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    const style = STYLES.find(s => s.id === selectedStyle);
+    const chosen = TOPPINGS.filter(t => selectedToppings.has(t.id));
+    const wetCount = chosen.filter(t => t.moisture === 'wet' && t.addTiming === 'before-bake').length;
+
+    const warnings = [];
+    if (wetCount >= 2) {
+      warnings.push("High moisture load before the bake — pat wet toppings dry or reduce sauce to avoid a soggy center.");
+    }
+    const doughSelect = document.getElementById('doughSelect');
+    const doughLabel = doughSelect.options[doughSelect.selectedIndex]?.text || "selected dough";
+
+    const steps = [];
+
+    if (selectedMethod === 'ooni') {
+      steps.push({ phase: 'preheat', instruction: `Preheat Ooni (${selectedFuel}) until stone reads ~950°F. Soak 15-20 min after flame catches.` });
+      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ~${style.diameterIn}", keeping a puffy outer rim.` });
+      steps.push({ phase: 'top', instruction: `${style.sauceG}g sauce, ${style.cheeseG}g cheese. Hold back: ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'}.` });
+      steps.push({ phase: 'cook', instruction: `Launch onto the stone. Rotate every 15 sec. Total cook time 60-90 sec depending on flame intensity.` });
+      steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} immediately off the stone.` });
+    } else {
+      const surfaceSoak = selectedSurface === 'steel' ? 45 : selectedSurface === 'stone' ? 60 : 20;
+      steps.push({ phase: 'preheat', instruction: `Preheat oven to 550°F (max) with ${selectedSurface} on the top-third rack. Soak ${surfaceSoak} min once at temp.` });
+      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ${style.diameterIn ? style.diameterIn + '"' : 'pan size'}.` });
+      steps.push({ phase: 'top', instruction: `${style.sauceG}g sauce, ${style.cheeseG}g cheese. Hold back: ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'}.` });
+      steps.push({ phase: 'cook', instruction: `Bake 6-9 min. If it needs color on top, finish 60-90 sec under the broiler — watch it closely.` });
+      steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} right out of the oven.` });
+    }
+
+    document.getElementById('warningsContainer').innerHTML = warnings.map(w => `<div class="warning-banner">${w}</div>`).join('');
+    document.getElementById('stepsContainer').innerHTML = steps.map(s => `
+      <div class="plan-step">
+        <div class="phase-tag">${s.phase}</div>
+        <div class="instruction">${s.instruction}</div>
+      </div>
+    `).join('');
+    document.getElementById('planOutput').classList.remove('hidden');
+    document.getElementById('planOutput').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // ---------------- SERVICE WORKER (installability + basic offline shell) ----------------
+  // Same safe pattern as Crumb: wrapped in try/catch so restricted environments
+  // (in-app browsers, sandboxes, private mode) don't break the rest of the app.
+  try {
+    const isSecure = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+    if ('serviceWorker' in navigator && isSecure) {
+      const swPath = new URL('service-worker.js', window.location.href).pathname;
+      navigator.serviceWorker.register(swPath)
+        .then(reg => console.log('[sw] registered, scope:', reg.scope))
+        .catch(err => console.warn('[sw] registration failed:', err));
+    }
+  } catch (e) { /* ignore — app still works without SW */ }
+</script>
+
+</body>
+</html>
