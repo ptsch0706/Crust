@@ -269,6 +269,45 @@
   .hidden { display: none; }
 
   .status-msg { color: var(--ink-mute); font-size: 13px; padding: 10px 0; }
+
+  .settings-toggle {
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-size: 12px;
+    padding: 6px 0 0;
+    cursor: pointer;
+    text-align: left;
+  }
+  .settings-panel {
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .settings-row {
+    display: flex;
+    gap: 8px;
+  }
+  .settings-row input {
+    flex: 1;
+    background: var(--bg-elev);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .settings-row button {
+    background: var(--basil);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -290,6 +329,17 @@
       <option value="">Loading doughs…</option>
     </select>
     <div class="status-msg" id="doughStatus"></div>
+
+    <button class="settings-toggle" id="settingsToggle" type="button">⚙ Sync settings</button>
+    <div class="settings-panel hidden" id="settingsPanel">
+      <div class="sub" style="margin-bottom:8px;">
+        Household sync code — same one you use in Crumb. Change it here any time it rotates.
+      </div>
+      <div class="settings-row">
+        <input type="text" id="syncCodeInput" placeholder="e.g. 4F82-KQ1">
+        <button id="saveSyncCode" type="button">Save</button>
+      </div>
+    </div>
   </div>
 
   <!-- STEP 2: STYLE -->
@@ -352,27 +402,20 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // ---- FILL THIS IN with the same Firebase config Crumb uses ----
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAgKxDeOuRSmsX5Ht29i6tk6bGIEl0TH1Q",
+    authDomain: "crumb-app-b6559.firebaseapp.com",
+    projectId: "crumb-app-b6559",
+    storageBucket: "crumb-app-b6559.firebasestorage.app",
+    messagingSenderId: "925400735518",
+    appId: "1:925400735518:web:82f694bdeb98529a22b30f"
   };
-  // ----------------------------------------------------------------
-  // ADJUST THESE TWO to match Crumb's actual Firestore structure:
-  const DOUGH_COLLECTION = "recipes";     // <- collection name in Crumb
-  const FIELD_MAP = {                     // <- field names in a dough doc
-    name: "name",
-    style: "style",
-    hydration: "hydrationPercent",
-    ballWeight: "ballWeightG"
-  };
-  // ----------------------------------------------------------------
+
+  // Recipes live in a subcollection under a household doc, keyed by sync code:
+  // crumb_households/{syncCode}/recipes/{recipeId}
+  const SYNC_CODE_KEY = "crust_crumb_sync_code";
 
   let app, db;
   let doughs = [];
@@ -384,34 +427,97 @@
     console.error("Firebase init failed", e);
   }
 
+  // ---- Hydration calc, mirrored exactly from Crumb's own logic ----
+  function parseGrams(qty) {
+    if (!qty || typeof qty !== 'string') return null;
+    const m = qty.match(/^\s*([\d.]+)\s*(g|gram|grams)\b/i);
+    if (!m) return null;
+    const n = parseFloat(m[1]);
+    return isNaN(n) ? null : n;
+  }
+  function classifyIngredient(name) {
+    if (!name) return 'other';
+    const n = name.toLowerCase();
+    if (n.includes('water')) return 'water';
+    if (n.includes('flour') || n.includes('semolina') || n.includes('rye') || n.includes('whole wheat') || n.includes('all-purpose') || n.includes('all purpose') || n.includes('bread flour')) {
+      return 'flour';
+    }
+    return 'other';
+  }
+  function computeHydration(ingredients) {
+    if (!ingredients || ingredients.length === 0) return null;
+    let flour = 0, water = 0;
+    for (const ing of ingredients) {
+      const g = parseGrams(ing.qty);
+      if (g === null) continue;
+      const kind = classifyIngredient(ing.name);
+      if (kind === 'flour') flour += g;
+      else if (kind === 'water') water += g;
+    }
+    if (flour === 0) return null;
+    return Math.round((water / flour) * 100);
+  }
+
+  function getSavedSyncCode() {
+    try { return localStorage.getItem(SYNC_CODE_KEY) || ""; } catch (e) { return ""; }
+  }
+  function saveSyncCode(code) {
+    try { localStorage.setItem(SYNC_CODE_KEY, code); } catch (e) { /* private mode, ignore */ }
+  }
+
   async function loadDoughs() {
     const statusEl = document.getElementById('doughStatus');
     const selectEl = document.getElementById('doughSelect');
+    const syncCode = getSavedSyncCode();
+
     if (!db) {
-      statusEl.textContent = "Firebase config not set yet — fill in firebaseConfig in the script.";
+      statusEl.textContent = "Firebase connection failed to initialize.";
       selectEl.innerHTML = '<option value="">— no connection —</option>';
       return;
     }
+    if (!syncCode) {
+      statusEl.textContent = "No sync code saved yet — add it under ⚙ Sync settings below.";
+      selectEl.innerHTML = '<option value="">— enter sync code —</option>';
+      document.getElementById('settingsPanel').classList.remove('hidden');
+      return;
+    }
     try {
-      const snap = await getDocs(collection(db, DOUGH_COLLECTION));
-      doughs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const householdRef = doc(db, 'crumb_households', syncCode);
+      const snap = await getDocs(collection(householdRef, 'recipes'));
+      doughs = snap.docs.map(d => {
+        const data = d.data();
+        return { id: d.id, ...data, computedHydration: computeHydration(data.ingredients) };
+      });
       if (doughs.length === 0) {
-        statusEl.textContent = `No docs found in "${DOUGH_COLLECTION}" — check the collection name.`;
+        statusEl.textContent = "Connected, but no recipes found for that sync code — double check it matches Crumb.";
         selectEl.innerHTML = '<option value="">— none found —</option>';
         return;
       }
-      selectEl.innerHTML = doughs.map(d =>
-        `<option value="${d.id}">${d[FIELD_MAP.name] || d.id}</option>`
-      ).join('');
+      selectEl.innerHTML = doughs.map(d => {
+        const hydText = d.computedHydration !== null ? ` · ${d.computedHydration}% hydration` : '';
+        return `<option value="${d.id}">${d.name || d.id}${hydText}</option>`;
+      }).join('');
       statusEl.textContent = `Loaded ${doughs.length} recipe(s) from Crumb.`;
     } catch (e) {
       console.error(e);
-      statusEl.textContent = "Couldn't reach Firestore — check config, collection name, and security rules.";
+      statusEl.textContent = "Couldn't reach Firestore — check the sync code and Firestore security rules.";
       selectEl.innerHTML = '<option value="">— error —</option>';
     }
   }
+
+  document.getElementById('syncCodeInput').value = getSavedSyncCode();
+  document.getElementById('settingsToggle').addEventListener('click', () => {
+    document.getElementById('settingsPanel').classList.toggle('hidden');
+  });
+  document.getElementById('saveSyncCode').addEventListener('click', () => {
+    const code = document.getElementById('syncCodeInput').value.trim();
+    saveSyncCode(code);
+    loadDoughs();
+  });
+
   loadDoughs();
 </script>
+
 
 <script>
   // ---------------- STYLE PRESETS ----------------
