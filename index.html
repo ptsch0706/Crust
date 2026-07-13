@@ -55,7 +55,7 @@
   header {
     padding: 20px 20px 12px;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
   }
   header h1 {
@@ -87,8 +87,16 @@
     margin-bottom: 12px;
     box-shadow: var(--shadow-sm);
   }
+  .card .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--basil);
+    margin-bottom: 6px;
+  }
   .card h2 {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 500;
     margin-bottom: 4px;
   }
@@ -270,20 +278,6 @@
 
   .status-msg { color: var(--ink-mute); font-size: 13px; padding: 10px 0; }
 
-  .settings-toggle {
-    background: none;
-    border: none;
-    color: var(--ink-mute);
-    font-size: 12px;
-    padding: 6px 0 0;
-    cursor: pointer;
-    text-align: left;
-  }
-  .settings-panel {
-    margin-top: 10px;
-    padding-top: 12px;
-    border-top: 1px solid var(--line-soft);
-  }
   .settings-row {
     display: flex;
     gap: 8px;
@@ -308,50 +302,120 @@
     font-weight: 600;
     cursor: pointer;
   }
+
+  /* Header gear button */
+  .gear-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-size: 20px;
+    padding: 4px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .gear-btn:active { color: var(--ink); }
+
+  /* Settings modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 22, 18, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-sheet {
+    background: var(--bg-elev);
+    width: 100%;
+    max-width: 640px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .modal-header h2 {
+    font-size: 19px;
+    font-weight: 600;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+  .settings-field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .settings-hint {
+    color: var(--ink-mute);
+    font-size: 12px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>Cr<span class="ear">u</span>st</h1>
-    <p>Pizza Cook Planner</p>
-  </div>
+  <h1>Crust<span class="ear">.</span></h1>
+  <button class="gear-btn" id="settingsToggle" type="button" aria-label="Settings">⚙</button>
 </header>
+
+<div class="modal-backdrop hidden" id="settingsModal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button class="modal-close" id="settingsClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="settings-field-label">Crumb sync code</div>
+    <div class="settings-row">
+      <input type="text" id="syncCodeInput" placeholder="e.g. 4F82-KQ1">
+      <button id="saveSyncCode" type="button">Save</button>
+    </div>
+    <div class="settings-hint">Same household sync code you use in Crumb. Update it here any time it rotates — Crust reads your pizza recipes live from Crumb's Firestore using this code.</div>
+  </div>
+</div>
 
 <main>
 
   <!-- STEP 1: DOUGH -->
   <div class="card">
-    <h2>1. Dough</h2>
-    <div class="sub">Pulled from Crumb</div>
+    <div class="eyebrow">The Dough</div>
+    <h2>Select your recipe</h2>
+    <div class="sub">Pizza recipes pulled from Crumb</div>
     <select id="doughSelect">
       <option value="">Loading doughs…</option>
     </select>
     <div class="status-msg" id="doughStatus"></div>
-
-    <button class="settings-toggle" id="settingsToggle" type="button">⚙ Sync settings</button>
-    <div class="settings-panel hidden" id="settingsPanel">
-      <div class="sub" style="margin-bottom:8px;">
-        Household sync code — same one you use in Crumb. Change it here any time it rotates.
-      </div>
-      <div class="settings-row">
-        <input type="text" id="syncCodeInput" placeholder="e.g. 4F82-KQ1">
-        <button id="saveSyncCode" type="button">Save</button>
-      </div>
-    </div>
   </div>
 
   <!-- STEP 2: STYLE -->
   <div class="card">
-    <h2>2. Style</h2>
+    <div class="eyebrow">The Style</div>
+    <h2>Choose your format</h2>
     <div class="sub">Sets defaults for weight, sauce and cheese ratios</div>
     <div class="style-grid" id="styleGrid"></div>
   </div>
 
   <!-- STEP 3: METHOD -->
   <div class="card">
-    <h2>3. Method</h2>
+    <div class="eyebrow">The Method</div>
+    <h2>Ooni or oven</h2>
     <div class="sub">Ooni and oven use different timing logic entirely</div>
     <div class="segmented" style="margin-bottom:14px;">
       <button class="ooni active" data-method="ooni">Ooni</button>
@@ -384,7 +448,8 @@
 
   <!-- STEP 4: TOPPINGS -->
   <div class="card">
-    <h2>4. Toppings</h2>
+    <div class="eyebrow">The Toppings</div>
+    <h2>Build your pie</h2>
     <div class="sub">Tap to select — wet toppings are flagged</div>
     <div id="toppingContainer"></div>
   </div>
@@ -393,7 +458,8 @@
 
   <!-- OUTPUT -->
   <div class="card hidden" id="planOutput">
-    <h2>Your plan</h2>
+    <div class="eyebrow">The Plan</div>
+    <h2>Ready to cook</h2>
     <div id="warningsContainer"></div>
     <div id="stepsContainer"></div>
   </div>
@@ -476,20 +542,42 @@
       return;
     }
     if (!syncCode) {
-      statusEl.textContent = "No sync code saved yet — add it under ⚙ Sync settings below.";
+      statusEl.textContent = "No sync code saved yet — add it in Settings (⚙, top right).";
       selectEl.innerHTML = '<option value="">— enter sync code —</option>';
-      document.getElementById('settingsPanel').classList.remove('hidden');
+      openSettingsModal();
       return;
     }
     try {
       const householdRef = doc(db, 'crumb_households', syncCode);
-      const snap = await getDocs(collection(householdRef, 'recipes'));
-      doughs = snap.docs.map(d => {
+      const [recipeSnap, categorySnap] = await Promise.all([
+        getDocs(collection(householdRef, 'recipes')),
+        getDocs(collection(householdRef, 'categories'))
+      ]);
+
+      const categories = categorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const pizzaCategory = categories.find(c => (c.name || '').toLowerCase().includes('pizza'));
+
+      let allDoughs = recipeSnap.docs.map(d => {
         const data = d.data();
         return { id: d.id, ...data, computedHydration: computeHydration(data.ingredients) };
       });
+
+      let usedFallback = false;
+      if (pizzaCategory) {
+        doughs = allDoughs.filter(d => d.categoryId === pizzaCategory.id);
+      } else {
+        // No "Pizza" category set up in Crumb yet — fall back to name matching
+        // so this still works, but flag it so it's clear this is a guess.
+        usedFallback = true;
+        doughs = allDoughs.filter(d => (d.name || '').toLowerCase().includes('pizza'));
+      }
+
+      window.__crustDoughs = doughs;
+
       if (doughs.length === 0) {
-        statusEl.textContent = "Connected, but no recipes found for that sync code — double check it matches Crumb.";
+        statusEl.textContent = usedFallback
+          ? "No recipes with \"pizza\" in the name — tag some as a \"Pizza\" category in Crumb for reliable filtering."
+          : "Connected, but no recipes tagged with the \"Pizza\" category in Crumb.";
         selectEl.innerHTML = '<option value="">— none found —</option>';
         return;
       }
@@ -497,7 +585,9 @@
         const hydText = d.computedHydration !== null ? ` · ${d.computedHydration}% hydration` : '';
         return `<option value="${d.id}">${d.name || d.id}${hydText}</option>`;
       }).join('');
-      statusEl.textContent = `Loaded ${doughs.length} recipe(s) from Crumb.`;
+      statusEl.textContent = usedFallback
+        ? `Loaded ${doughs.length} recipe(s) matching "pizza" by name. Tag them with a Pizza category in Crumb for more reliable filtering.`
+        : `Loaded ${doughs.length} pizza recipe(s) from Crumb.`;
     } catch (e) {
       console.error(e);
       statusEl.textContent = "Couldn't reach Firestore — check the sync code and Firestore security rules.";
@@ -505,14 +595,24 @@
     }
   }
 
+  function openSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('hidden');
+  }
+  function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.add('hidden');
+  }
+
   document.getElementById('syncCodeInput').value = getSavedSyncCode();
-  document.getElementById('settingsToggle').addEventListener('click', () => {
-    document.getElementById('settingsPanel').classList.toggle('hidden');
+  document.getElementById('settingsToggle').addEventListener('click', openSettingsModal);
+  document.getElementById('settingsClose').addEventListener('click', closeSettingsModal);
+  document.getElementById('settingsModal').addEventListener('click', (e) => {
+    if (e.target.id === 'settingsModal') closeSettingsModal();
   });
   document.getElementById('saveSyncCode').addEventListener('click', () => {
     const code = document.getElementById('syncCodeInput').value.trim();
     saveSyncCode(code);
     loadDoughs();
+    closeSettingsModal();
   });
 
   loadDoughs();
@@ -522,10 +622,14 @@
 <script>
   // ---------------- STYLE PRESETS ----------------
   const STYLES = [
-    { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90 },
-    { id: "ny",          name: "New York",   doughWeightG: 340, diameterIn: 14, defaultMethod: "oven", sauceG: 90, cheeseG: 150 },
-    { id: "detroit",     name: "Detroit",    doughWeightG: 400, diameterIn: 0,  defaultMethod: "oven", sauceG: 70, cheeseG: 220 },
-    { id: "grandma",     name: "Grandma",    doughWeightG: 380, diameterIn: 0,  defaultMethod: "oven", sauceG: 100, cheeseG: 140 }
+    { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90, hydrationRange: [65, 72],
+      ooniCookSec: [60, 90],   ooniRotateSec: 15,  ovenCookMin: [5, 7] },
+    { id: "ny",          name: "New York",   doughWeightG: 340, diameterIn: 14, defaultMethod: "oven", sauceG: 90, cheeseG: 150, hydrationRange: [58, 65],
+      ooniCookSec: [180, 240], ooniRotateSec: 30,  ovenCookMin: [6, 9] },
+    { id: "detroit",     name: "Detroit",    doughWeightG: 400, diameterIn: 0,  defaultMethod: "oven", sauceG: 70, cheeseG: 220, hydrationRange: [70, 78],
+      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [12, 15] },
+    { id: "grandma",     name: "Grandma",    doughWeightG: 380, diameterIn: 0,  defaultMethod: "oven", sauceG: 100, cheeseG: 140, hydrationRange: [65, 75],
+      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [10, 14] }
   ];
   let selectedStyle = STYLES[0].id;
 
@@ -593,16 +697,44 @@
 
   // ---------------- TOPPINGS ----------------
   const TOPPINGS = [
+    // Sauce
     { id: "san-marzano", name: "San Marzano sauce", category: "sauce", moisture: "wet", addTiming: "before-bake" },
-    { id: "fresh-mozz",  name: "Fresh mozzarella",  category: "cheese", moisture: "wet", addTiming: "before-bake" },
-    { id: "low-moist-mozz", name: "Low-moisture mozz", category: "cheese", moisture: "dry", addTiming: "before-bake" },
-    { id: "pepperoni",   name: "Pepperoni", category: "protein", moisture: "dry", addTiming: "before-bake" },
-    { id: "sausage",     name: "Italian sausage", category: "protein", moisture: "dry", addTiming: "before-bake" },
-    { id: "mushroom",    name: "Mushroom", category: "veg", moisture: "wet", addTiming: "before-bake" },
-    { id: "onion",       name: "Red onion", category: "veg", moisture: "dry", addTiming: "before-bake" },
-    { id: "basil",       name: "Fresh basil", category: "finishing", moisture: "wet", addTiming: "after-bake" },
-    { id: "arugula",     name: "Arugula", category: "finishing", moisture: "wet", addTiming: "after-bake" },
-    { id: "chili-oil",   name: "Chili oil", category: "finishing", moisture: "dry", addTiming: "after-bake" }
+    { id: "white-garlic", name: "White garlic sauce", category: "sauce", moisture: "dry", addTiming: "before-bake" },
+    { id: "pesto",        name: "Pesto", category: "sauce", moisture: "dry", addTiming: "before-bake" },
+    { id: "bbq-sauce",    name: "BBQ sauce", category: "sauce", moisture: "dry", addTiming: "before-bake" },
+    // Cheese
+    { id: "fresh-mozz",      name: "Fresh mozzarella",  category: "cheese", moisture: "wet", addTiming: "before-bake" },
+    { id: "low-moist-mozz",  name: "Low-moisture mozz", category: "cheese", moisture: "dry", addTiming: "before-bake" },
+    { id: "parmesan",        name: "Parmesan", category: "cheese", moisture: "dry", addTiming: "before-bake" },
+    { id: "ricotta",         name: "Ricotta", category: "cheese", moisture: "wet", addTiming: "before-bake" },
+    { id: "provolone",       name: "Provolone", category: "cheese", moisture: "dry", addTiming: "before-bake" },
+    { id: "goat-cheese",     name: "Goat cheese", category: "cheese", moisture: "dry", addTiming: "before-bake" },
+    // Protein
+    { id: "pepperoni",  name: "Pepperoni", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "sausage",    name: "Italian sausage", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "bacon",      name: "Bacon", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "ham",        name: "Ham", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "meatball",   name: "Meatball, sliced", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "chicken",    name: "Grilled chicken", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    { id: "anchovies",  name: "Anchovies", category: "protein", moisture: "dry", addTiming: "before-bake" },
+    // Vegetables
+    { id: "mushroom",     name: "Mushroom", category: "veg", moisture: "wet", addTiming: "before-bake" },
+    { id: "onion",        name: "Red onion", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "bell-pepper",  name: "Bell pepper", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "black-olives", name: "Black olives", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "jalapeno",     name: "Jalapeño", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "spinach",      name: "Spinach", category: "veg", moisture: "wet", addTiming: "before-bake" },
+    { id: "garlic",       name: "Roasted garlic", category: "veg", moisture: "dry", addTiming: "before-bake" },
+    { id: "pineapple",    name: "Pineapple", category: "veg", moisture: "wet", addTiming: "before-bake" },
+    { id: "tomato-slices", name: "Fresh tomato slices", category: "veg", moisture: "wet", addTiming: "before-bake" },
+    // Finishing
+    { id: "basil",        name: "Fresh basil", category: "finishing", moisture: "wet", addTiming: "after-bake" },
+    { id: "arugula",       name: "Arugula", category: "finishing", moisture: "wet", addTiming: "after-bake" },
+    { id: "chili-oil",     name: "Chili oil", category: "finishing", moisture: "dry", addTiming: "after-bake" },
+    { id: "grated-parm",   name: "Grated parmesan", category: "finishing", moisture: "dry", addTiming: "after-bake" },
+    { id: "honey",         name: "Honey drizzle", category: "finishing", moisture: "dry", addTiming: "after-bake" },
+    { id: "red-pepper-flakes", name: "Red pepper flakes", category: "finishing", moisture: "dry", addTiming: "after-bake" },
+    { id: "flaky-salt",    name: "Flaky salt", category: "finishing", moisture: "dry", addTiming: "after-bake" }
   ];
   const CATEGORY_LABELS = { sauce: "Sauce", cheese: "Cheese", protein: "Protein", veg: "Vegetables", finishing: "Finishing" };
   let selectedToppings = new Set(["san-marzano", "fresh-mozz", "basil"]);
@@ -644,22 +776,50 @@
       warnings.push("High moisture load before the bake — pat wet toppings dry or reduce sauce to avoid a soggy center.");
     }
     const doughSelect = document.getElementById('doughSelect');
-    const doughLabel = doughSelect.options[doughSelect.selectedIndex]?.text || "selected dough";
+    const doughLabel = (doughSelect.options[doughSelect.selectedIndex]?.text || "selected dough").split(' ·')[0];
+    const selectedDoughId = doughSelect.value;
+    const doughData = (window.__crustDoughs || []).find(d => d.id === selectedDoughId);
+    const hydration = doughData ? doughData.computedHydration : null;
+
+    // Cross-check the actual dough's hydration against what this style expects,
+    // and add a shaping tip based on how wet the dough actually is.
+    let shapingNote = "";
+    if (hydration !== null) {
+      const [lo, hi] = style.hydrationRange;
+      if (hydration < lo) {
+        warnings.push(`${doughLabel} is ${hydration}% hydration — drier than typical for ${style.name} (${lo}-${hi}%). Expect a tighter crumb and less oven spring.`);
+      } else if (hydration > hi) {
+        warnings.push(`${doughLabel} is ${hydration}% hydration — wetter than typical for ${style.name} (${lo}-${hi}%). Handle gently; it'll be extra sticky and prone to tearing.`);
+      }
+      if (hydration >= 70) {
+        shapingNote = " Dough is high-hydration — use wet hands or extra bench flour, and don't overwork it while shaping.";
+      } else if (hydration <= 58) {
+        shapingNote = " Dough is on the drier side — it should shape cleanly, just give it a few extra minutes to relax if it resists stretching.";
+      }
+    }
 
     const steps = [];
 
     if (selectedMethod === 'ooni') {
+      const [cookLo, cookHi] = style.ooniCookSec;
+      const cookText = cookHi <= 90
+        ? `${cookLo}-${cookHi} sec`
+        : `${Math.round(cookLo/60*10)/10}-${Math.round(cookHi/60*10)/10} min`;
+      const rotateText = style.ooniRotateSec <= 30
+        ? `every ${style.ooniRotateSec} sec`
+        : `every ${Math.round(style.ooniRotateSec/60)} min`;
       steps.push({ phase: 'preheat', instruction: `Preheat Ooni (${selectedFuel}) until stone reads ~950°F. Soak 15-20 min after flame catches.` });
-      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ~${style.diameterIn}", keeping a puffy outer rim.` });
+      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ~${style.diameterIn}", keeping a puffy outer rim.${shapingNote}` });
       steps.push({ phase: 'top', instruction: `${style.sauceG}g sauce, ${style.cheeseG}g cheese. Hold back: ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'}.` });
-      steps.push({ phase: 'cook', instruction: `Launch onto the stone. Rotate every 15 sec. Total cook time 60-90 sec depending on flame intensity.` });
+      steps.push({ phase: 'cook', instruction: `Launch onto the stone. Rotate ${rotateText}. Total cook time ${cookText}${cookHi > 120 ? ' — this style is thicker, so it needs real dwell time, not a quick Neapolitan-style blast' : ' depending on flame intensity'}.` });
       steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} immediately off the stone.` });
     } else {
       const surfaceSoak = selectedSurface === 'steel' ? 45 : selectedSurface === 'stone' ? 60 : 20;
+      const [ovenLo, ovenHi] = style.ovenCookMin;
       steps.push({ phase: 'preheat', instruction: `Preheat oven to 550°F (max) with ${selectedSurface} on the top-third rack. Soak ${surfaceSoak} min once at temp.` });
-      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ${style.diameterIn ? style.diameterIn + '"' : 'pan size'}.` });
+      steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ${style.diameterIn ? style.diameterIn + '"' : 'pan size'}.${shapingNote}` });
       steps.push({ phase: 'top', instruction: `${style.sauceG}g sauce, ${style.cheeseG}g cheese. Hold back: ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'}.` });
-      steps.push({ phase: 'cook', instruction: `Bake 6-9 min. If it needs color on top, finish 60-90 sec under the broiler — watch it closely.` });
+      steps.push({ phase: 'cook', instruction: `Bake ${ovenLo}-${ovenHi} min. If it needs color on top, finish 60-90 sec under the broiler — watch it closely.` });
       steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} right out of the oven.` });
     }
 
