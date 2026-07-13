@@ -255,6 +255,15 @@
     font-size: 13px;
     margin-bottom: 12px;
   }
+  .tip-banner {
+    background: var(--basil-soft);
+    border: 1px solid var(--basil);
+    color: var(--basil-deep);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
   .plan-step {
     display: flex;
     gap: 12px;
@@ -326,6 +335,7 @@
     align-items: flex-end;
     justify-content: center;
   }
+  .modal-backdrop.hidden { display: none; }
   .modal-sheet {
     background: var(--bg-elev);
     width: 100%;
@@ -460,6 +470,7 @@
   <div class="card hidden" id="planOutput">
     <div class="eyebrow">The Plan</div>
     <h2>Ready to cook</h2>
+    <div id="tipsContainer"></div>
     <div id="warningsContainer"></div>
     <div id="stepsContainer"></div>
   </div>
@@ -623,13 +634,29 @@
   // ---------------- STYLE PRESETS ----------------
   const STYLES = [
     { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90, hydrationRange: [65, 72],
-      ooniCookSec: [60, 90],   ooniRotateSec: 15,  ovenCookMin: [5, 7] },
+      ooniCookSec: [60, 90],   ooniRotateSec: 20,  ovenCookMin: [5, 7],
+      tip: "Handle the dough as little as possible before it hits the stone — you want that puffy, airy rim intact." },
     { id: "ny",          name: "New York",   doughWeightG: 340, diameterIn: 14, defaultMethod: "oven", sauceG: 90, cheeseG: 150, hydrationRange: [58, 65],
-      ooniCookSec: [180, 240], ooniRotateSec: 30,  ovenCookMin: [6, 9] },
+      ooniCookSec: [180, 240], ooniRotateSec: 30,  ovenCookMin: [6, 9],
+      tip: "Foldable slice, thin center — stretch from the middle out and leave a bit more dough at the rim." },
     { id: "detroit",     name: "Detroit",    doughWeightG: 400, diameterIn: 0,  defaultMethod: "oven", sauceG: 70, cheeseG: 220, hydrationRange: [70, 78],
-      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [12, 15] },
+      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [12, 15],
+      tip: "Cheese goes all the way to the pan edges for that crispy, caramelized \"frico\" border. Sauce goes on top, after baking, in stripes." },
     { id: "grandma",     name: "Grandma",    doughWeightG: 380, diameterIn: 0,  defaultMethod: "oven", sauceG: 100, cheeseG: 140, hydrationRange: [65, 75],
-      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [10, 14] }
+      ooniCookSec: [480, 600], ooniRotateSec: 120, ovenCookMin: [10, 14],
+      tip: "Thinner and oilier than Sicilian — press it out with your fingertips right in the pan instead of stretching by hand." },
+    { id: "sicilian",    name: "Sicilian",   doughWeightG: 450, diameterIn: 0,  defaultMethod: "oven", sauceG: 80, cheeseG: 200, hydrationRange: [70, 76],
+      ooniCookSec: [600, 720], ooniRotateSec: 120, ovenCookMin: [18, 22],
+      tip: "Let the shaped dough rest in the oiled pan 1-2 hrs before topping — that's what gives Sicilian its airy, focaccia-like crumb." },
+    { id: "deep-dish",   name: "Chicago Deep Dish", doughWeightG: 500, diameterIn: 0, defaultMethod: "oven", sauceG: 150, cheeseG: 250, hydrationRange: [50, 58],
+      ooniCookSec: [900, 1200], ooniRotateSec: 180, ovenCookMin: [25, 35],
+      tip: "Built upside-down: cheese goes directly on the dough first, toppings next, chunky sauce on top last — it protects the crust from getting soggy under a long bake." },
+    { id: "roman",       name: "Roman al Taglio", doughWeightG: 600, diameterIn: 0, defaultMethod: "oven", sauceG: 70, cheeseG: 180, hydrationRange: [75, 85],
+      ooniCookSec: [600, 780], ooniRotateSec: 120, ovenCookMin: [15, 20],
+      tip: "This dough is very wet and unshapeable by hand — use a bowl scraper or oiled hands to spread it into the pan corners." },
+    { id: "bar-pie",     name: "Bar Pie", doughWeightG: 200, diameterIn: 12, defaultMethod: "oven", sauceG: 70, cheeseG: 130, hydrationRange: [45, 55],
+      ooniCookSec: [150, 210], ooniRotateSec: 30, ovenCookMin: [8, 10],
+      tip: "Roll it out cracker-thin with a pin, not by hand, and dock it all over with a fork to stop it bubbling up." }
   ];
   let selectedStyle = STYLES[0].id;
 
@@ -656,8 +683,8 @@
   let selectedSurface = "steel";
 
   const METHOD_CONFIG = {
-    ooni: { tempF: 950, label: "Preheat target" },
-    oven: { tempF: 550, label: "Preheat target" }
+    ooni: { tempF: 932, displayText: "842-932°F", label: "Preheat target" },
+    oven: { tempF: 550, displayText: "550°F", label: "Preheat target" }
   };
 
   function updateHeatGauge() {
@@ -666,7 +693,7 @@
     const tempEl = document.getElementById('heatTemp');
     const cfg = METHOD_CONFIG[selectedMethod];
     gauge.className = 'heat-gauge ' + selectedMethod;
-    tempEl.textContent = cfg.tempF + '°F';
+    tempEl.textContent = cfg.displayText;
     requestAnimationFrame(() => {
       fill.style.width = Math.min(100, (cfg.tempF / 1000) * 100) + '%';
     });
@@ -808,10 +835,10 @@
       const rotateText = style.ooniRotateSec <= 30
         ? `every ${style.ooniRotateSec} sec`
         : `every ${Math.round(style.ooniRotateSec/60)} min`;
-      steps.push({ phase: 'preheat', instruction: `Preheat Ooni (${selectedFuel}) until stone reads ~950°F. Soak 15-20 min after flame catches.` });
+      steps.push({ phase: 'preheat', instruction: `Preheat Ooni (${selectedFuel}) until the stone reads 842-932°F (450-500°C) — check with an infrared thermometer rather than guessing. Let it soak 15-20 min once the flame catches.` });
       steps.push({ phase: 'shape', instruction: `Shape ${style.doughWeightG}g of ${doughLabel} to ~${style.diameterIn}", keeping a puffy outer rim.${shapingNote}` });
       steps.push({ phase: 'top', instruction: `${style.sauceG}g sauce, ${style.cheeseG}g cheese. Hold back: ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'}.` });
-      steps.push({ phase: 'cook', instruction: `Launch onto the stone. Rotate ${rotateText}. Total cook time ${cookText}${cookHi > 120 ? ' — this style is thicker, so it needs real dwell time, not a quick Neapolitan-style blast' : ' depending on flame intensity'}.` });
+      steps.push({ phase: 'cook', instruction: `Launch onto the stone. Rotate ${rotateText}. Total cook time ${cookText}${cookHi > 120 ? ` — this style is thicker, so it needs real dwell time, not a quick Neapolitan-style blast. Turn the flame down to medium/low partway through so the top doesn't scorch before the center cooks through — same trick Ooni uses for steaks and other slow cooks.` : ' depending on flame intensity'}.` });
       steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} immediately off the stone.` });
     } else {
       const surfaceSoak = selectedSurface === 'steel' ? 45 : selectedSurface === 'stone' ? 60 : 20;
@@ -823,6 +850,7 @@
       steps.push({ phase: 'finish', instruction: `Add ${chosen.filter(t => t.addTiming === 'after-bake').map(t => t.name).join(', ') || 'nothing'} right out of the oven.` });
     }
 
+    document.getElementById('tipsContainer').innerHTML = style.tip ? `<div class="tip-banner">${style.tip}</div>` : '';
     document.getElementById('warningsContainer').innerHTML = warnings.map(w => `<div class="warning-banner">${w}</div>`).join('');
     document.getElementById('stepsContainer').innerHTML = steps.map(s => `
       <div class="plan-step">
