@@ -53,7 +53,7 @@
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
   header {
-    padding: 20px 20px 12px;
+    padding: calc(20px + env(safe-area-inset-top)) 20px 12px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -87,6 +87,8 @@
     margin-bottom: 12px;
     box-shadow: var(--shadow-sm);
   }
+  #planOutput { margin-bottom: 12px; }
+  #bakeLogCard { margin-top: 28px; }
   .card .eyebrow {
     font-size: 11px;
     font-weight: 600;
@@ -318,10 +320,16 @@
     background: none;
     border: none;
     color: var(--ink-mute);
-    font-size: 20px;
-    padding: 4px;
+    padding: 6px;
     cursor: pointer;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gear-btn svg {
+    width: 22px;
+    height: 22px;
   }
   .gear-btn:active { color: var(--ink); }
 
@@ -377,13 +385,226 @@
     margin-top: 10px;
     line-height: 1.5;
   }
+
+  .settings-toggle-inline {
+    background: none;
+    border: none;
+    color: var(--basil);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 0 0;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .manage-list {
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .manage-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+  }
+  .manage-row:last-child { border-bottom: none; }
+  .manage-row .name { color: var(--ink); }
+  .manage-row .cat-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-mute);
+    margin-left: 6px;
+  }
+  .manage-row .remove-btn {
+    background: none;
+    border: none;
+    color: var(--tomato);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    line-height: 1;
+  }
+  .manage-empty {
+    padding: 16px 12px;
+    color: var(--ink-mute);
+    font-size: 13px;
+    text-align: center;
+  }
+  .restore-link {
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0 0 16px;
+  }
+
+  .add-topping-form {
+    border-top: 1px solid var(--line-soft);
+    padding-top: 14px;
+  }
+  .add-topping-form .field-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .add-topping-form input[type="text"],
+  .add-topping-form select {
+    background: var(--bg-elev);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .add-topping-form input[type="text"] { flex: 2; }
+  .add-topping-form select { flex: 1; }
+  .add-topping-form .add-btn {
+    width: 100%;
+    background: var(--basil);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Bake photo capture */
+  .photo-btn-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .photo-capture-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--bg-warm);
+    color: var(--ink);
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 16px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .photo-capture-btn svg {
+    width: 22px;
+    height: 22px;
+    color: var(--basil);
+  }
+  .bake-photo-preview {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .bake-note-input {
+    width: 100%;
+    background: var(--bg-elev);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: 12px;
+  }
+  .generate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Bake log gallery + detail */
+  .modal-sheet-tall {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .bakes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .bakes-grid .bake-thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .bakes-empty {
+    grid-column: 1 / -1;
+    color: var(--ink-mute);
+    font-size: 13px;
+    text-align: center;
+    padding: 30px 12px;
+  }
+  .bake-detail img {
+    width: 100%;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+  }
+  .bake-detail .back-link {
+    background: none;
+    border: none;
+    color: var(--basil);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 0 12px;
+  }
+  .bake-detail .meta-row {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .bake-detail .meta-row strong { color: var(--ink); }
+  .bake-detail .note-text {
+    font-size: 14px;
+    color: var(--ink);
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+  .bake-detail .delete-btn {
+    background: none;
+    border: 1.5px solid var(--warn);
+    color: var(--warn);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Crust<span class="ear">.</span></h1>
-  <button class="gear-btn" id="settingsToggle" type="button" aria-label="Settings">⚙</button>
+  <button class="gear-btn" id="bakeLogToggle" type="button" aria-label="Bake log" style="margin-left:auto;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+  </button>
+  <button class="gear-btn" id="settingsToggle" type="button" aria-label="Settings" style="margin-left:8px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  </button>
 </header>
 
 <div class="modal-backdrop hidden" id="settingsModal">
@@ -398,6 +619,53 @@
       <button id="saveSyncCode" type="button">Save</button>
     </div>
     <div class="settings-hint">Same household sync code you use in Crumb. Update it here any time it rotates — Crust reads your pizza recipes live from Crumb's Firestore using this code.</div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="toppingsManageModal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Manage Toppings</h2>
+      <button class="modal-close" id="toppingsManageClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="manage-list" id="manageToppingsList"></div>
+    <button class="restore-link" id="restoreHiddenToppings" type="button">Restore hidden defaults</button>
+
+    <div class="add-topping-form">
+      <div class="settings-field-label">Add a topping</div>
+      <div class="field-row">
+        <input type="text" id="newToppingName" placeholder="Topping name">
+        <select id="newToppingCategory">
+          <option value="sauce">Sauce</option>
+          <option value="cheese">Cheese</option>
+          <option value="protein">Protein</option>
+          <option value="veg">Vegetables</option>
+          <option value="finishing">Finishing</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <select id="newToppingMoisture" style="flex:1;">
+          <option value="dry">Dry</option>
+          <option value="wet">Wet (flags moisture warning)</option>
+        </select>
+        <select id="newToppingTiming" style="flex:1;">
+          <option value="before-bake">Add before bake</option>
+          <option value="after-bake">Add after bake</option>
+        </select>
+      </div>
+      <button class="add-btn" id="addToppingBtn" type="button">Add topping</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="bakeLogModal">
+  <div class="modal-sheet modal-sheet-tall">
+    <div class="modal-header">
+      <h2 id="bakeLogTitle">Bake Log</h2>
+      <button class="modal-close" id="bakeLogClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div id="bakeLogGrid" class="bakes-grid"></div>
+    <div id="bakeLogDetail" class="bake-detail hidden"></div>
   </div>
 </div>
 
@@ -462,6 +730,7 @@
     <h2>Build your pie</h2>
     <div class="sub">Tap to select — wet toppings are flagged</div>
     <div id="toppingContainer"></div>
+    <button class="settings-toggle-inline" id="manageToppingsBtn" type="button">Manage toppings</button>
   </div>
 
   <button class="generate-btn" id="generateBtn">Generate cook plan</button>
@@ -473,6 +742,31 @@
     <div id="tipsContainer"></div>
     <div id="warningsContainer"></div>
     <div id="stepsContainer"></div>
+  </div>
+
+  <!-- BAKE LOG CAPTURE -->
+  <div class="card" id="bakeLogCard">
+    <div class="eyebrow">The Bake</div>
+    <h2>Log the finished pie</h2>
+    <div class="sub">Snap a photo when it comes out — builds your bake history</div>
+
+    <input type="file" accept="image/*" capture="environment" id="bakePhotoCameraInput" class="hidden">
+    <input type="file" accept="image/*" id="bakePhotoLibraryInput" class="hidden">
+    <div class="photo-btn-row">
+      <button class="photo-capture-btn" id="bakePhotoCameraBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        Take a photo
+      </button>
+      <button class="photo-capture-btn" id="bakePhotoLibraryBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        Choose photo
+      </button>
+    </div>
+    <img id="bakePhotoPreview" class="bake-photo-preview hidden" alt="Pie preview">
+
+    <textarea id="bakeNote" class="bake-note-input" placeholder="Any notes — how it turned out, what you'd change next time (optional)"></textarea>
+    <button class="generate-btn" id="saveBakeBtn" type="button" disabled>Save to bake log</button>
+    <div class="status-msg" id="bakeSaveStatus"></div>
   </div>
 
 </main>
@@ -633,7 +927,7 @@
 <script>
   // ---------------- STYLE PRESETS ----------------
   const STYLES = [
-    { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90, hydrationRange: [65, 72],
+    { id: "neapolitan", name: "Neapolitan", doughWeightG: 250, diameterIn: 11, defaultMethod: "ooni", sauceG: 60, cheeseG: 90, hydrationRange: [58, 72],
       ooniCookSec: [60, 90],   ooniRotateSec: 20,  ovenCookMin: [5, 7],
       tip: "Handle the dough as little as possible before it hits the stone — you want that puffy, airy rim intact." },
     { id: "ny",          name: "New York",   doughWeightG: 340, diameterIn: 14, defaultMethod: "oven", sauceG: 90, cheeseG: 150, hydrationRange: [58, 65],
@@ -723,7 +1017,7 @@
   });
 
   // ---------------- TOPPINGS ----------------
-  const TOPPINGS = [
+  const DEFAULT_TOPPINGS = [
     // Sauce
     { id: "san-marzano", name: "San Marzano sauce", category: "sauce", moisture: "wet", addTiming: "before-bake" },
     { id: "white-garlic", name: "White garlic sauce", category: "sauce", moisture: "dry", addTiming: "before-bake" },
@@ -766,21 +1060,50 @@
   const CATEGORY_LABELS = { sauce: "Sauce", cheese: "Cheese", protein: "Protein", veg: "Vegetables", finishing: "Finishing" };
   let selectedToppings = new Set(["san-marzano", "fresh-mozz", "basil"]);
 
+  // ---- Persistence: hidden defaults + custom user-added toppings ----
+  const HIDDEN_TOPPINGS_KEY = "crust_hidden_toppings";
+  const CUSTOM_TOPPINGS_KEY = "crust_custom_toppings";
+
+  function getHiddenToppings() {
+    try { return JSON.parse(localStorage.getItem(HIDDEN_TOPPINGS_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveHiddenToppings(arr) {
+    try { localStorage.setItem(HIDDEN_TOPPINGS_KEY, JSON.stringify(arr)); } catch (e) { /* private mode, ignore */ }
+  }
+  function getCustomToppings() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_TOPPINGS_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveCustomToppings(arr) {
+    try { localStorage.setItem(CUSTOM_TOPPINGS_KEY, JSON.stringify(arr)); } catch (e) { /* private mode, ignore */ }
+  }
+
+  // The full working list: defaults + custom, minus anything hidden.
+  function getActiveToppings() {
+    const hidden = getHiddenToppings();
+    const all = DEFAULT_TOPPINGS.concat(getCustomToppings());
+    return all.filter(t => !hidden.includes(t.id));
+  }
+
   function renderToppings() {
     const container = document.getElementById('toppingContainer');
     const cats = ["sauce", "cheese", "protein", "veg", "finishing"];
-    container.innerHTML = cats.map(cat => `
+    const active = getActiveToppings();
+    container.innerHTML = cats.map(cat => {
+      const items = active.filter(t => t.category === cat);
+      if (items.length === 0) return '';
+      return `
       <div class="topping-cat">
         <div class="cat-label">${CATEGORY_LABELS[cat]}</div>
         <div class="chip-row">
-          ${TOPPINGS.filter(t => t.category === cat).map(t => `
+          ${items.map(t => `
             <div class="chip ${t.moisture} ${selectedToppings.has(t.id) ? 'selected' : ''}" data-topping="${t.id}">
               <span class="dot"></span>${t.name}
             </div>
           `).join('')}
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     container.querySelectorAll('.chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const id = chip.dataset.topping;
@@ -792,10 +1115,79 @@
   }
   renderToppings();
 
+  // ---- Manage Toppings modal ----
+  function renderManageList() {
+    const listEl = document.getElementById('manageToppingsList');
+    const active = getActiveToppings();
+    if (active.length === 0) {
+      listEl.innerHTML = '<div class="manage-empty">No toppings left — add some below or restore defaults.</div>';
+      return;
+    }
+    listEl.innerHTML = active.map(t => `
+      <div class="manage-row">
+        <span class="name">${t.name}<span class="cat-tag">${CATEGORY_LABELS[t.category]}</span></span>
+        <button class="remove-btn" data-remove-id="${t.id}" data-is-custom="${t.id.startsWith('custom_')}" type="button" aria-label="Remove">×</button>
+      </div>
+    `).join('');
+    listEl.querySelectorAll('[data-remove-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.removeId;
+        const isCustom = btn.dataset.isCustom === 'true';
+        if (isCustom) {
+          const custom = getCustomToppings().filter(t => t.id !== id);
+          saveCustomToppings(custom);
+        } else {
+          const hidden = getHiddenToppings();
+          if (!hidden.includes(id)) {
+            hidden.push(id);
+            saveHiddenToppings(hidden);
+          }
+        }
+        selectedToppings.delete(id);
+        renderManageList();
+        renderToppings();
+      });
+    });
+  }
+
+  function openToppingsManageModal() {
+    renderManageList();
+    document.getElementById('toppingsManageModal').classList.remove('hidden');
+  }
+  function closeToppingsManageModal() {
+    document.getElementById('toppingsManageModal').classList.add('hidden');
+  }
+
+  document.getElementById('manageToppingsBtn').addEventListener('click', openToppingsManageModal);
+  document.getElementById('toppingsManageClose').addEventListener('click', closeToppingsManageModal);
+  document.getElementById('toppingsManageModal').addEventListener('click', (e) => {
+    if (e.target.id === 'toppingsManageModal') closeToppingsManageModal();
+  });
+  document.getElementById('restoreHiddenToppings').addEventListener('click', () => {
+    saveHiddenToppings([]);
+    renderManageList();
+    renderToppings();
+  });
+  document.getElementById('addToppingBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('newToppingName');
+    const name = nameInput.value.trim();
+    if (!name) return;
+    const category = document.getElementById('newToppingCategory').value;
+    const moisture = document.getElementById('newToppingMoisture').value;
+    const addTiming = document.getElementById('newToppingTiming').value;
+    const id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const custom = getCustomToppings();
+    custom.push({ id, name, category, moisture, addTiming });
+    saveCustomToppings(custom);
+    nameInput.value = '';
+    renderManageList();
+    renderToppings();
+  });
+
   // ---------------- PLAN GENERATION ----------------
   document.getElementById('generateBtn').addEventListener('click', () => {
     const style = STYLES.find(s => s.id === selectedStyle);
-    const chosen = TOPPINGS.filter(t => selectedToppings.has(t.id));
+    const chosen = getActiveToppings().filter(t => selectedToppings.has(t.id));
     const wetCount = chosen.filter(t => t.moisture === 'wet' && t.addTiming === 'before-bake').length;
 
     const warnings = [];
@@ -860,6 +1252,199 @@
     `).join('');
     document.getElementById('planOutput').classList.remove('hidden');
     document.getElementById('planOutput').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // ---------------- BAKE LOG (photos of finished pies) ----------------
+  // Stored in IndexedDB rather than localStorage/Firestore — photos are
+  // binary-ish data that can add up fast, and IndexedDB has no practical
+  // size ceiling here and needs no network call or Firebase cost.
+  const BAKE_DB_NAME = 'crust-bake-log';
+  const BAKE_STORE = 'bakes';
+
+  function openBakeDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(BAKE_DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(BAKE_STORE)) {
+          db.createObjectStore(BAKE_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function addBake(record) {
+    const db = await openBakeDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BAKE_STORE, 'readwrite');
+      tx.objectStore(BAKE_STORE).add(record);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  async function getAllBakes() {
+    const db = await openBakeDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BAKE_STORE, 'readonly');
+      const req = tx.objectStore(BAKE_STORE).getAll();
+      req.onsuccess = () => resolve(req.result.sort((a, b) => b.timestamp - a.timestamp));
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function deleteBake(id) {
+    const db = await openBakeDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BAKE_STORE, 'readwrite');
+      tx.objectStore(BAKE_STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  // Downscale + compress the captured photo before storing, so the log
+  // doesn't balloon in size — a phone camera photo can be 3-8MB; this
+  // gets it down to roughly 50-150KB per pie.
+  function compressImage(file, maxWidth = 900, quality = 0.72) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  let pendingBakePhoto = null;
+
+  async function handleBakePhotoFile(file) {
+    if (!file) return;
+    const dataUrl = await compressImage(file);
+    pendingBakePhoto = dataUrl;
+    const preview = document.getElementById('bakePhotoPreview');
+    preview.src = dataUrl;
+    preview.classList.remove('hidden');
+    document.getElementById('saveBakeBtn').disabled = false;
+  }
+
+  document.getElementById('bakePhotoCameraBtn').addEventListener('click', () => {
+    document.getElementById('bakePhotoCameraInput').click();
+  });
+  document.getElementById('bakePhotoLibraryBtn').addEventListener('click', () => {
+    document.getElementById('bakePhotoLibraryInput').click();
+  });
+  document.getElementById('bakePhotoCameraInput').addEventListener('change', (e) => handleBakePhotoFile(e.target.files[0]));
+  document.getElementById('bakePhotoLibraryInput').addEventListener('change', (e) => handleBakePhotoFile(e.target.files[0]));
+
+  document.getElementById('saveBakeBtn').addEventListener('click', async () => {
+    if (!pendingBakePhoto) return;
+    const style = STYLES.find(s => s.id === selectedStyle);
+    const chosenNames = getActiveToppings().filter(t => selectedToppings.has(t.id)).map(t => t.name);
+    const doughSelect = document.getElementById('doughSelect');
+    const doughLabel = (doughSelect.options[doughSelect.selectedIndex]?.text || '').split(' ·')[0];
+    const note = document.getElementById('bakeNote').value.trim();
+
+    const record = {
+      id: 'bake_' + Date.now(),
+      timestamp: Date.now(),
+      photo: pendingBakePhoto,
+      styleName: style.name,
+      method: selectedMethod,
+      doughLabel: doughLabel || null,
+      toppings: chosenNames,
+      note: note || ''
+    };
+
+    const statusEl = document.getElementById('bakeSaveStatus');
+    try {
+      await addBake(record);
+      statusEl.textContent = 'Saved to your bake log.';
+      pendingBakePhoto = null;
+      document.getElementById('bakePhotoPreview').classList.add('hidden');
+      document.getElementById('bakePhotoCameraInput').value = '';
+      document.getElementById('bakePhotoLibraryInput').value = '';
+      document.getElementById('bakeNote').value = '';
+      document.getElementById('saveBakeBtn').disabled = true;
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'Could not save — your browser may be low on storage or in private mode.';
+    }
+  });
+
+  // ---- Bake Log gallery + detail view ----
+  async function renderBakeGrid() {
+    document.getElementById('bakeLogTitle').textContent = 'Bake Log';
+    const gridEl = document.getElementById('bakeLogGrid');
+    const detailEl = document.getElementById('bakeLogDetail');
+    detailEl.classList.add('hidden');
+    gridEl.classList.remove('hidden');
+
+    let bakes = [];
+    try { bakes = await getAllBakes(); } catch (e) { console.error(e); }
+
+    if (bakes.length === 0) {
+      gridEl.innerHTML = '<div class="bakes-empty">No bakes logged yet — snap a photo after your next pie.</div>';
+      return;
+    }
+    gridEl.innerHTML = bakes.map(b =>
+      `<img class="bake-thumb" src="${b.photo}" data-bake-id="${b.id}" alt="${b.styleName}">`
+    ).join('');
+    gridEl.querySelectorAll('.bake-thumb').forEach(img => {
+      img.addEventListener('click', () => showBakeDetail(img.dataset.bakeId, bakes));
+    });
+  }
+
+  function showBakeDetail(id, bakes) {
+    const bake = bakes.find(b => b.id === id);
+    if (!bake) return;
+    document.getElementById('bakeLogTitle').textContent = bake.styleName;
+    document.getElementById('bakeLogGrid').classList.add('hidden');
+    const detailEl = document.getElementById('bakeLogDetail');
+    detailEl.classList.remove('hidden');
+
+    const dateStr = new Date(bake.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    detailEl.innerHTML = `
+      <button class="back-link" id="bakeDetailBack" type="button">‹ Back to log</button>
+      <img src="${bake.photo}" alt="${bake.styleName}">
+      <div class="meta-row"><strong>${bake.styleName}</strong> · ${dateStr}</div>
+      <div class="meta-row">${bake.method === 'ooni' ? 'Ooni' : 'Oven'}${bake.doughLabel ? ' · ' + bake.doughLabel : ''}</div>
+      ${bake.toppings.length ? `<div class="meta-row">${bake.toppings.join(', ')}</div>` : ''}
+      ${bake.note ? `<div class="note-text">${bake.note}</div>` : ''}
+      <button class="delete-btn" id="bakeDetailDelete" type="button">Delete this entry</button>
+    `;
+    document.getElementById('bakeDetailBack').addEventListener('click', renderBakeGrid);
+    document.getElementById('bakeDetailDelete').addEventListener('click', async () => {
+      try {
+        await deleteBake(id);
+        renderBakeGrid();
+      } catch (e) { console.error(e); }
+    });
+  }
+
+  function openBakeLogModal() {
+    renderBakeGrid();
+    document.getElementById('bakeLogModal').classList.remove('hidden');
+  }
+  function closeBakeLogModal() {
+    document.getElementById('bakeLogModal').classList.add('hidden');
+  }
+  document.getElementById('bakeLogToggle').addEventListener('click', openBakeLogModal);
+  document.getElementById('bakeLogClose').addEventListener('click', closeBakeLogModal);
+  document.getElementById('bakeLogModal').addEventListener('click', (e) => {
+    if (e.target.id === 'bakeLogModal') closeBakeLogModal();
   });
 
   // ---------------- SERVICE WORKER (installability + basic offline shell) ----------------
